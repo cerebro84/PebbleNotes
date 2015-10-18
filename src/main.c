@@ -1,23 +1,36 @@
 #include <pebble.h>
-
+// #include <mini-printf.h>
+#include <xprintf.h>
 static Window *s_main_window;
 static MenuLayer *s_menu_layer;
+static char** notes;
+static char** noteTitles;
+static char** notesSubtitles;
+static int numNotes; 
 
+static void initTestNotes() {
+  const int notesSize = 4;
+  for (int i = 0; i < notesSize; i++) {
+    xsprintf(noteTitles[i],"Titolo %d",i);
+    xsprintf(notesSubtitles[i],"Sottotitolo %d",i);
+    xsprintf(notes[i],"Nota %d",i);
+  }
+} 
 static void main_window_unload(Window *window) {
   // Destroy the menu layer
   menu_layer_destroy(s_menu_layer);
 }
 
 static uint16_t menu_get_num_sections_callback(MenuLayer *menu_layer, void *data) {
-  return 2;
+  return numNotes;
 }
 
   static uint16_t menu_get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, void *data) {
   switch (section_index) {
     case 0:
-      return 2;
-    case 1:
-      return 4;
+      return numNotes;
+    /* case 1:
+      return 4;*/
     default:
       return 0;
   }
@@ -31,18 +44,22 @@ static void menu_draw_header_callback(GContext* ctx, const Layer *cell_layer, ui
   // Determine which section we're working with
   switch (section_index) {
     case 0:
+    menu_cell_basic_header_draw(ctx, cell_layer, "Note");
     case 1:
     case 2:
     case 3:
     case 4:
-      menu_cell_basic_header_draw(ctx, cell_layer, "Menu prova");
+      // menu_cell_basic_header_draw(ctx, cell_layer, "Menu prova");
       break;
   }
 }
 
 static void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuIndex *cell_index, void *data) {
   // Determine which section we're going to draw in
-  switch (cell_index->section) {
+  if (cell_index->row < numNotes) {
+    menu_cell_basic_draw(ctx, cell_layer, noteTitles[cell_index->row], notesSubtitles[cell_index->row], NULL);
+  }
+  /* switch (cell_index->section) {
     case 0:
       // Use the row to specify which item we'll draw
       switch (cell_index->row) {
@@ -59,7 +76,7 @@ static void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuI
           menu_cell_title_draw(ctx, cell_layer, "Final Item");
           break;
       }
-  }
+  }*/
 }
 
 static void menu_select_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void *data) {
@@ -68,6 +85,7 @@ static void menu_select_callback(MenuLayer *menu_layer, MenuIndex *cell_index, v
 
 static void main_window_load(Window *window) {
   // Now we prepare to initialize the menu layer
+  initTestNotes();
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_frame(window_layer);
 
